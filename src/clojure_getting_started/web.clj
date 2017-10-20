@@ -8,6 +8,8 @@
             [camel-snake-kebab.core :as kebab]
             [clojure.java.jdbc :as db]))
 
+(def sample (env :sample "sample-string-thing"))
+
 (defn splash []
   {:status 200
    :headers {"Content-Type" "text/html"}
