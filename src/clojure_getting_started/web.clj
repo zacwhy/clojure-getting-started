@@ -3,10 +3,12 @@
             [compojure.handler :refer [site]]
             [compojure.route :as route]
             [clojure.java.io :as io]
-            [ring.adapter.jetty :as jetty]
+            [clojure.java.jdbc :as db]
             [environ.core :refer [env]]
-            [camel-snake-kebab.core :as kebab]
-            [clojure.java.jdbc :as db]))
+            [ring.adapter.jetty :as jetty]
+            [ring.middleware.json :refer [wrap-json-params wrap-json-response]]
+            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+            [ring.util.response :refer [response]]))
 
 (def sample (env :sample "sample-string-thing"))
 
@@ -22,26 +24,30 @@
                    (format "<li>%s</li>" (:content s)))
                  ["</ul>"])})
 
-(defn record [input]
-  (db/insert! (env :database-url "postgres://localhost:5432/kebabs")
-              :sayings {:content input}))
+(defroutes inner-routes
+  (GET "/entries" []
+       (response
+         (db/query (env :database-url)
+                   ["select id, transaction_date, amount, from_account, to_account, description, created_on from entries"])))
+  (POST "/entries"
+        {{:keys [transaction_date amount from_account to_account description]} :params}
+        (response
+          (db/insert! (env :database-url)
+                      :entries {:transaction_date (java.sql.Date/valueOf transaction_date)
+                                :amount amount
+                                :from_account from_account
+                                :to_account to_account
+                                :description description})))
+  )
+
+(def api-routes
+  (-> inner-routes
+      wrap-json-response
+      wrap-keyword-params
+      wrap-json-params))
 
 (defroutes app
-  (GET "/camel" {{input :input} :params}
-       (record input)
-       {:status 200
-        :headers {"Content-Type" "text/plain"}
-        :body (kebab/->CamelCase input)})
-  (GET "/snake" {{input :input} :params}
-       (record input)
-       {:status 200
-        :headers {"Content-Type" "text/plain"}
-        :body (kebab/->snake_case input)})
-  (GET "/kebab" {{input :input} :params}
-       (record input)
-       {:status 200
-        :headers {"Content-Type" "text/plain"}
-        :body (kebab/->kebab-case input)})
+  api-routes
   (GET "/" []
        (splash))
   (ANY "*" []
