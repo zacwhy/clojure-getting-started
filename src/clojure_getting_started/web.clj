@@ -5,24 +5,19 @@
             [clojure.java.io :as io]
             [clojure.java.jdbc :as db]
             [environ.core :refer [env]]
+            [hiccup.page :as h]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.json :refer [wrap-json-params wrap-json-response]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.util.response :refer [response]]))
 
-(def sample (env :sample "sample-string-thing"))
-
-(defn splash []
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body (concat (for [kind ["camel" "snake" "kebab"]]
-                   (format "<a href=\"/%s?input=%s\">%s %s</a><br />"
-                           kind sample kind sample))
-                 ["<hr /><ul>"]
-                 (for [s (db/query (env :database-url)
-                                   ["select content from sayings"])]
-                   (format "<li>%s</li>" (:content s)))
-                 ["</ul>"])})
+(defn index []
+  (h/html5
+    [:head
+     [:title "Hello World"]
+     (h/include-js "/scripts/index.js")]
+    [:body
+     [:div {:id "content"} "Hello World"]]))
 
 (defroutes inner-routes
   (GET "/entries" []
@@ -47,8 +42,8 @@
 
 (defroutes app
   api-routes
-  (GET "/" []
-       (splash))
+  (GET "/" [] (index))
+  (route/resources "/")
   (ANY "*" []
        (route/not-found (slurp (io/resource "404.html")))))
 
