@@ -37,8 +37,7 @@
                                 :amount amount
                                 :from_account from_account
                                 :to_account to_account
-                                :description description})))
-  )
+                                :description description}))))
 
 (def api-routes
   (-> inner-routes
