@@ -12,6 +12,7 @@
                  [org.postgresql/postgresql "9.4-1201-jdbc4"]]
   :min-lein-version "2.0.0"
   :plugins [[environ/environ.lein "0.3.1"]
+            [lein-environ "1.1.0"]
             [lein-ring "0.9.7"]]
   :ring {:handler clojure-getting-started.web/app}
   :hooks [environ.leiningen.hooks]
