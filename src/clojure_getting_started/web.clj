@@ -15,9 +15,12 @@
   (h/html5
     [:head
      [:title "Hello World"]
-     (h/include-js "/scripts/index.js")]
+     (h/include-css "/styles/style.css")
+     (h/include-js "https://unpkg.com/react@16/umd/react.development.js")
+     (h/include-js "https://unpkg.com/react-dom@16/umd/react-dom.development.js")]
     [:body
-     [:div {:id "content"} "Hello World"]]))
+     [:div {:id "root"}]
+     (h/include-js "/scripts/index.js")]))
 
 (defroutes inner-routes
   (GET "/entries" []
