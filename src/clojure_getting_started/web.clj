@@ -22,6 +22,15 @@
      [:div {:id "root"}]
      (h/include-js "/scripts/index.js")]))
 
+(defn figwheel []
+  (h/html5
+    [:head
+     [:title "Tx"]
+     (h/include-css "/styles/style.css")]
+    [:body
+     [:div {:id "root"}]
+     (h/include-js "/js/app.js")]))
+
 (defroutes inner-routes
   (GET "/entries" []
        (response
@@ -46,6 +55,7 @@
 (defroutes app
   api-routes
   (GET "/" [] (index))
+  (GET "/figwheel" [] (figwheel))
   (route/resources "/")
   (ANY "*" []
        (route/not-found (slurp (io/resource "404.html")))))
